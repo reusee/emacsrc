@@ -133,7 +133,7 @@
 ; mode line color
 (add-hook 'evil-normal-state-entry-hook 'set-mode-line-color)
 (add-hook 'evil-insert-state-entry-hook 'set-mode-line-color)
-(add-hook 'evil-repalce-state-entry-hook 'set-mode-line-color)
+(add-hook 'evil-replace-state-entry-hook 'set-mode-line-color)
 (add-hook 'evil-visual-state-entry-hook 'set-mode-line-color)
 (add-hook 'evil-operator-state-entry-hook 'set-mode-line-color)
 (defun set-mode-line-color ()
