@@ -1,8 +1,9 @@
+(set-face-foreground 'modeline "white")
 (setq-default
  mode-line-format
  '(
    (:propertize (:eval (format-time-string "%H:%M")))
-   (:propertize "%4l" face mode-line-position-face)
+   (:propertize "%8l" face mode-line-position-face)
    " "
    (:eval
     (cond (buffer-read-only

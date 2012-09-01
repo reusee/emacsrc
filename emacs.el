@@ -21,6 +21,16 @@
 (defadvice shell (around always-new-shell)
   (let ((buffer (generate-new-buffer-name "*shell*"))) ad-do-it))
 (ad-activate 'shell)
+(setq compile-command "")
+
+; minor mode to override keys globally
+(defvar my-keys-mode-map (make-keymap) "my-keys-mode keymap.")
+(define-minor-mode my-keys-mode
+  t " my-keys" 'my-keys-mode-map)
+(my-keys-mode 1)
+(defun my-minibuffer-setup-hook ()
+  (my-keys-mode 0))
+(add-hook 'minibuffer-setup-hook 'my-minibuffer-setup-hook)
 
 ; Appearance
 (load-theme 'Amelie t)
@@ -104,7 +114,6 @@
 (mouse-wheel-mode 1)
 (tabbar-mode 1)
 (tabbar-mwheel-mode -1)
-(global-set-key (kbd "<f4>") 'tabbar-forward-group)
 
 ; Editing
 (setq-default indent-tabs-mode nil)
@@ -120,21 +129,27 @@
 (setq evil-default-cursor t)
 (require 'evil)
 (evil-mode 1)
-(set-face-background 'modeline "#111")
-(set-face-foreground 'modeline "white")
-(defun evil-set-mode-color
-  (state color)
-  (add-hook (intern (concat "evil-" state "-state-entry-hook"))
-            (lexical-let ((color color))
-              #'(lambda ()
-                (set-face-background 'modeline color))))
-  (add-hook (intern (concat "evil-" state "-state-exit-hook"))
-            (lambda ()
-              (set-face-background 'modeline "#111"))))
-(evil-set-mode-color "insert" "#0099cc")
-(evil-set-mode-color "replace" "#00cc99")
-(evil-set-mode-color "visual" "#9900cc")
-(evil-set-mode-color "operator" "#cc0099")
+
+; mode line color
+(add-hook 'evil-normal-state-entry-hook 'set-mode-line-color)
+(add-hook 'evil-insert-state-entry-hook 'set-mode-line-color)
+(add-hook 'evil-repalce-state-entry-hook 'set-mode-line-color)
+(add-hook 'evil-visual-state-entry-hook 'set-mode-line-color)
+(add-hook 'evil-operator-state-entry-hook 'set-mode-line-color)
+(defun set-mode-line-color ()
+  (interactive)
+  (cond
+   ((evil-normal-state-p)
+    (set-face-background 'modeline "#111"))
+   ((evil-insert-state-p)
+    (set-face-background 'modeline "#09c"))
+   ((evil-replace-state-p)
+    (set-face-background 'modeline "#0c9"))
+   ((evil-visual-state-p)
+    (set-face-background 'modeline "#90c"))
+   ((evil-operator-state-p)
+    (set-face-background 'modeline "#c09"))
+    ))
 
 ; Remote
 (setq tramp-default-method "ssh")
@@ -149,12 +164,16 @@
 (define-key evil-normal-state-map "M" 'scroll-up)
 (define-key evil-normal-state-map "U" 'scroll-down)
 (define-key evil-normal-state-map "e" 'ace-jump-char-mode)
-(define-key evil-normal-state-map "L" 'tabbar-forward-tab)
-(global-set-key "\C-l" 'tabbar-forward-tab)
-(define-key evil-normal-state-map "H" 'tabbar-backward-tab)
-(global-set-key "\C-k" 'tabbar-backward-tab)
+(define-key my-keys-mode-map "\C-l"
+  (lambda () (interactive)
+    (progn (tabbar-forward-tab) (set-mode-line-color))))
+(define-key my-keys-mode-map "\C-k"
+  (lambda () (interactive)
+    (progn (tabbar-backward-tab) (set-mode-line-color))))
+(define-key my-keys-mode-map "\C-j"
+  (lambda () (interactive)
+    (progn (tabbar-forward-group) (set-mode-line-color))))
 (define-key evil-normal-state-map "s" 'evil-find-char-backward)
-(define-key evil-motion-state-map [up] 'tabbar-forward-group)
 
 ; comma commands
 (define-key evil-normal-state-map ",1" 'delete-other-windows)
@@ -168,27 +187,26 @@
 (define-key evil-normal-state-map ",s" 'shell)
 (define-key evil-normal-state-map ",f" 'ido-find-file)
 (define-key evil-normal-state-map ",z" 'save-buffers-kill-terminal)
-(define-key evil-normal-state-map ",x"
-  (lambda () (interactive)
-    (server-kill-buffer (current-buffer))))
+(define-key evil-normal-state-map ",c" 'compile)
 
 ; mode
 (define-key evil-visual-state-map "q" 'evil-force-normal-state)
-(define-key evil-insert-state-map "j" #'cofi/maybe-exit)
-(define-key evil-replace-state-map "j" #'cofi/maybe-exit)
-(evil-define-command cofi/maybe-exit ()
-                     :repeat change
-                     (interactive)
-                     (let ((modified (buffer-modified-p)))
-                       (insert "j")
-                       (let ((evt (read-event (format "Insert %c to exit insert state" ?j) nil 0.5)))
-                         (cond
-                           ((null evt) (message ""))
-                           ((and (integerp evt) (char-equal evt ?j))
-                            (delete-char -1)
-                            (set-buffer-modified-p modified)
-                            (push 'escape unread-command-events))
-                           (t (setq unread-command-events (append unread-command-events (list evt))))))))
+(define-key evil-insert-state-map "j" 'cofi/maybe-exit)
+(define-key evil-replace-state-map "j" 'cofi/maybe-exit)
+(evil-define-command cofi/maybe-exit
+  ()
+  :repeat change
+  (interactive)
+  (let ((modified (buffer-modified-p)))
+    (insert "j")
+    (let ((evt (read-event (format "Insert %c to exit insert state" ?j) nil 0.5)))
+      (cond
+        ((null evt) (message ""))
+        ((and (integerp evt) (char-equal evt ?j))
+         (delete-char -1)
+         (set-buffer-modified-p modified)
+         (push 'escape unread-command-events))
+        (t (setq unread-command-events (append unread-command-events (list evt))))))))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
