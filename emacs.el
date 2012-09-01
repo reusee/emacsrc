@@ -22,6 +22,7 @@
   (let ((buffer (generate-new-buffer-name "*shell*"))) ad-do-it))
 (ad-activate 'shell)
 (setq compile-command "")
+(helm-mode 1)
 
 ; minor mode to override keys globally
 (defvar my-keys-mode-map (make-keymap) "my-keys-mode keymap.")
@@ -46,8 +47,6 @@
 (menu-bar-mode -1)
 (blink-cursor-mode -1)
 (set-face-attribute 'default nil :font "Monaco-14")
-(require 'auto-complete-config)
-(ac-config-default)
 (show-paren-mode 1)
 (setq show-paren-delay 0)
 (set-face-foreground 'show-paren-match-face "red")
@@ -58,6 +57,14 @@
 (ansi-color-for-comint-mode-on)
 (setq redisplay-dont-pause t)
 (load "~/.emacs.d/my-modeline.el")
+
+; auto complete
+(require 'auto-complete-config)
+(ac-config-default)
+(setq-default ac-sources '(ac-source-words-in-same-mode-buffers
+                           ac-source-abbrev
+                           ac-source-dictionary))
+(setq ac-ignore-case nil)
 
 ; Navigation
 (require 'ace-jump-mode)
@@ -70,16 +77,21 @@
 (setq default-buffer-file-coding-system 'utf-8)
 (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
 (setq vc-follow-symlinks t)
-(setq backup-directory-alist
-      `((".*" . ,temporary-file-directory)))
-(setq auto-save-file-name-transforms
-      `((".*" ,temporary-file-directory t)))
 (toggle-diredp-find-file-reuse-dir 1)
 (require 'uniquify)
 (setq uniquify-buffer-name-style 'post-forward uniquify-separator ":")
 (setq bookmark-default-file "~/.emacs.d/bookmarks" bookmark-save-flag 1)
 (setq delete-by-moving-to-trash t)
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
+
+; Backup
+(setq backup-directory-alist `(("." . "~/.emacs.d/backup")))
+(setq version-control t)
+(setq kept-old-versions 2)
+(setq kept-new-versions 256)
+(setq delete-old-versions t)
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
 
 ; Buffer
 (iswitchb-mode t)
