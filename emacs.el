@@ -177,7 +177,9 @@
 
 ; comma commands
 (define-key evil-normal-state-map ",1" 'delete-other-windows)
-(define-key evil-normal-state-map ",q" 'kill-this-buffer)
+(define-key evil-normal-state-map ",q"
+  (lambda () (interactive)
+    (progn (kill-this-buffer) (set-mode-line-color))))
 (define-key evil-normal-state-map ",Q" 'evil-save-and-quit)
 (define-key evil-normal-state-map ",w" 'evil-write)
 (define-key evil-normal-state-map ",e" 'eval-last-sexp)
@@ -186,6 +188,7 @@
 (define-key evil-normal-state-map ",a" 'evil-window-next)
 (define-key evil-normal-state-map ",s" 'shell)
 (define-key evil-normal-state-map ",f" 'ido-find-file)
+(define-key evil-normal-state-map ",g" 'evil-scroll-line-to-top)
 (define-key evil-normal-state-map ",z" 'save-buffers-kill-terminal)
 (define-key evil-normal-state-map ",c" 'compile)
 
