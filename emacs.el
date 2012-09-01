@@ -200,7 +200,9 @@
 (define-key evil-normal-state-map ",a" 'evil-window-next)
 (define-key evil-normal-state-map ",s" 'shell)
 (define-key evil-normal-state-map ",f" 'ido-find-file)
-(define-key evil-normal-state-map ",g" 'evil-scroll-line-to-top)
+(define-key evil-normal-state-map ",gt" 'evil-scroll-line-to-top)
+(define-key evil-normal-state-map ",gg" 'evil-scroll-line-to-center)
+(define-key evil-normal-state-map ",gb" 'evil-scroll-line-to-bottom)
 (define-key evil-normal-state-map ",z" 'save-buffers-kill-terminal)
 (define-key evil-normal-state-map ",c" 'compile)
 
