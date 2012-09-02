@@ -18,11 +18,28 @@
 (add-hook 'server-switch-hook (lambda ()
   (remove-hook 'kill-buffer-query-functions 'server-kill-buffer-query-function)))
 (add-to-list 'auto-mode-alist (cons (file-truename "~/.emacs") 'emacs-lisp-mode))
-(defadvice shell (around always-new-shell)
-  (let ((buffer (generate-new-buffer-name "*shell*"))) ad-do-it))
-(ad-activate 'shell)
 (setq compile-command "")
 (helm-mode 1)
+
+; shell
+(setenv "SHELL" "bash")
+(defadvice shell (around always-new-shell) ; always open new buffer
+  (let ((buffer (generate-new-buffer-name "*shell*"))) ad-do-it))
+(ad-activate 'shell)
+(defadvice term-sentinel (around my-advice-term-sentinel (proc msg)) ; auto close buffer when exit shell
+  (if (memq (process-status proc) '(signal exit))
+      (let ((buffer (process-buffer proc)))
+        ad-do-it
+        (kill-buffer buffer))
+    ad-do-it))
+(ad-activate 'term-sentinel)
+(defvar my-term-shell "/bin/bash") ; do not ask for which shell to run
+(defadvice ansi-term (before force-bash)
+  (interactive (list my-term-shell)))
+(ad-activate 'ansi-term)
+(defun my-term-hook () ; show clickable url
+  (goto-address-mode))
+(add-hook 'term-mode-hook 'my-term-hook)
 
 ; minor mode to override keys globally
 (defvar my-keys-mode-map (make-keymap) "my-keys-mode keymap.")
@@ -148,9 +165,13 @@
 (add-hook 'evil-replace-state-entry-hook 'set-mode-line-color)
 (add-hook 'evil-visual-state-entry-hook 'set-mode-line-color)
 (add-hook 'evil-operator-state-entry-hook 'set-mode-line-color)
+(defadvice switch-to-buffer (after set-mode-line-color-when-switch activate)
+  (set-mode-line-color))
 (defun set-mode-line-color ()
   (interactive)
   (cond
+   ((string-equal mode-name "Help")
+    (set-face-background 'modeline "#9c0"))
    ((evil-normal-state-p)
     (set-face-background 'modeline "#111"))
    ((evil-insert-state-p)
@@ -161,6 +182,8 @@
     (set-face-background 'modeline "#90c"))
    ((evil-operator-state-p)
     (set-face-background 'modeline "#c09"))
+   ((evil-emacs-state-p)
+    (set-face-background 'modeline "#c90"))
     ))
 
 ; Remote
@@ -176,22 +199,14 @@
 (define-key evil-normal-state-map "M" 'scroll-up)
 (define-key evil-normal-state-map "U" 'scroll-down)
 (define-key evil-normal-state-map "e" 'ace-jump-char-mode)
-(define-key my-keys-mode-map "\C-l"
-  (lambda () (interactive)
-    (progn (tabbar-forward-tab) (set-mode-line-color))))
-(define-key my-keys-mode-map "\C-k"
-  (lambda () (interactive)
-    (progn (tabbar-backward-tab) (set-mode-line-color))))
-(define-key my-keys-mode-map "\C-j"
-  (lambda () (interactive)
-    (progn (tabbar-forward-group) (set-mode-line-color))))
+(define-key my-keys-mode-map "\C-l" 'tabbar-forward-tab)
+(define-key my-keys-mode-map "\C-k" 'tabbar-backward-tab)
+(define-key my-keys-mode-map "\C-j" 'tabbar-forward-group)
 (define-key evil-normal-state-map "s" 'evil-find-char-backward)
 
 ; comma commands
 (define-key evil-normal-state-map ",1" 'delete-other-windows)
-(define-key evil-normal-state-map ",q"
-  (lambda () (interactive)
-    (progn (kill-this-buffer) (set-mode-line-color))))
+(define-key evil-normal-state-map ",q" 'kill-this-buffer)
 (define-key evil-normal-state-map ",Q" 'evil-save-and-quit)
 (define-key evil-normal-state-map ",w" 'evil-write)
 (define-key evil-normal-state-map ",e" 'eval-last-sexp)
