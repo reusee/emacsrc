@@ -20,6 +20,7 @@
 (add-to-list 'auto-mode-alist (cons (file-truename "~/.emacs") 'emacs-lisp-mode))
 (setq compile-command "")
 (helm-mode 1)
+;(icy-mode 1)
 
 ; shell
 (setenv "SHELL" "bash")
@@ -140,6 +141,9 @@
 (mouse-wheel-mode 1)
 (tabbar-mode 1)
 (tabbar-mwheel-mode -1)
+(define-key my-keys-mode-map "\C-l" 'tabbar-forward-tab)
+(define-key my-keys-mode-map "\C-k" 'tabbar-backward-tab)
+(define-key my-keys-mode-map "\C-j" 'tabbar-forward-group)
 
 ; Editing
 (setq-default indent-tabs-mode nil)
@@ -192,14 +196,12 @@
 ; edit
 (define-key evil-insert-state-map "\C-\\" 'delete-horizontal-space)
 
-; navigate
-(define-key evil-normal-state-map "M" 'scroll-up)
-(define-key evil-normal-state-map "U" 'scroll-down)
+; normal state command
+(define-key evil-normal-state-map "q" 'evil-visual-block)
 (define-key evil-normal-state-map "e" 'ace-jump-char-mode)
-(define-key my-keys-mode-map "\C-l" 'tabbar-forward-tab)
-(define-key my-keys-mode-map "\C-k" 'tabbar-backward-tab)
-(define-key my-keys-mode-map "\C-j" 'tabbar-forward-group)
+(define-key evil-normal-state-map "U" 'scroll-down)
 (define-key evil-normal-state-map "s" 'evil-find-char-backward)
+(define-key evil-normal-state-map "M" 'scroll-up)
 
 ; comma commands
 (define-key evil-normal-state-map ",1" 'delete-other-windows)
@@ -211,6 +213,7 @@
 (define-key evil-normal-state-map ",t" 'undo-tree-redo)
 (define-key evil-normal-state-map ",a" 'evil-window-next)
 (define-key evil-normal-state-map ",s" 'shell)
+(define-key evil-normal-state-map ",S" 'ansi-term)
 (define-key evil-normal-state-map ",f" 'ido-find-file)
 (define-key evil-normal-state-map ",gt" 'evil-scroll-line-to-top)
 (define-key evil-normal-state-map ",gg" 'evil-scroll-line-to-center)
@@ -221,6 +224,8 @@
 (define-key evil-normal-state-map ",ba" 'bookmark-set)
 (define-key evil-normal-state-map ",bd" 'bookmark-delete)
 (define-key evil-normal-state-map ",bj" 'bookmark-jump)
+(define-key evil-normal-state-map ",m" 'evil-record-macro)
+(define-key evil-normal-state-map ",n" 'evil-execute-macro)
 
 ; mode
 (define-key evil-visual-state-map "q" 'evil-force-normal-state)
