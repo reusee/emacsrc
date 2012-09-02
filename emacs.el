@@ -23,20 +23,17 @@
 
 ; shell
 (setenv "SHELL" "bash")
-(defadvice shell (around always-new-shell) ; always open new buffer
+(defadvice shell (around always-new-shell activate) ; always open new buffer
   (let ((buffer (generate-new-buffer-name "*shell*"))) ad-do-it))
-(ad-activate 'shell)
-(defadvice term-sentinel (around my-advice-term-sentinel (proc msg)) ; auto close buffer when exit shell
+(defadvice term-sentinel (around my-advice-term-sentinel (proc msg) activate) ; auto close buffer when exit shell
   (if (memq (process-status proc) '(signal exit))
       (let ((buffer (process-buffer proc)))
         ad-do-it
         (kill-buffer buffer))
     ad-do-it))
-(ad-activate 'term-sentinel)
 (defvar my-term-shell "/bin/bash") ; do not ask for which shell to run
-(defadvice ansi-term (before force-bash)
+(defadvice ansi-term (before force-bash activate)
   (interactive (list my-term-shell)))
-(ad-activate 'ansi-term)
 (defun my-term-hook () ; show clickable url
   (goto-address-mode))
 (add-hook 'term-mode-hook 'my-term-hook)
@@ -220,6 +217,10 @@
 (define-key evil-normal-state-map ",gb" 'evil-scroll-line-to-bottom)
 (define-key evil-normal-state-map ",z" 'save-buffers-kill-terminal)
 (define-key evil-normal-state-map ",c" 'compile)
+(define-key evil-normal-state-map ",v" 'iswitchb-buffer)
+(define-key evil-normal-state-map ",ba" 'bookmark-set)
+(define-key evil-normal-state-map ",bd" 'bookmark-delete)
+(define-key evil-normal-state-map ",bj" 'bookmark-jump)
 
 ; mode
 (define-key evil-visual-state-map "q" 'evil-force-normal-state)
