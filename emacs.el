@@ -111,12 +111,28 @@
 ; Buffer
 (iswitchb-mode t)
 (require 'tabbar)
-(setq tabbar-buffer-groups-function
+(setq tabbar-buffer-groups-function ; group buffers in tabbar
       (lambda ()
         (list (cond
                ((string-equal "*" (substring (buffer-name) 0 1)) "System")
                (t "User")
                ))))
+(setq tabbar-buffer-list-function ; filter buffer list in tabbar
+      (lambda ()
+        (delq nil
+              (mapcar #'(lambda (b)
+                          (cond
+                           ((member (buffer-name b) '(
+                                                    "*helm-mode-execute-extended-command*"
+                                                    "*helm mini*"
+                                                    "*Help*"
+                                                    )) nil)
+                           ((eq (current-buffer) b) b)
+                           ((buffer-file-name b) b)
+                           ((char-equal ?\  (aref (buffer-name b) 0)) nil)
+                           ((buffer-live-p b) b)
+                           ))
+                      (buffer-list)))))
 (set-face-attribute 'tabbar-default nil :background "black" :foreground "white" :box nil)
 (set-face-attribute 'tabbar-unselected nil :background "black" :foreground "white" :box nil)
 (set-face-attribute 'tabbar-selected nil :background "white" :foreground "black" :height 1.2 :box nil)
