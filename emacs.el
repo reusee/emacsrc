@@ -20,7 +20,6 @@
 (add-to-list 'auto-mode-alist (cons (file-truename "~/.emacs") 'emacs-lisp-mode))
 (setq compile-command "")
 (helm-mode 1)
-;(icy-mode 1)
 
 ; shell
 (setenv "SHELL" "bash")
@@ -125,7 +124,9 @@
                            ((member (buffer-name b) '(
                                                     "*helm-mode-execute-extended-command*"
                                                     "*helm mini*"
+                                                    "*Helm Find Files*"
                                                     "*Help*"
+                                                    "*Packages*"
                                                     )) nil)
                            ((eq (current-buffer) b) b)
                            ((buffer-file-name b) b)
@@ -134,10 +135,10 @@
                            ))
                       (buffer-list)))))
 (set-face-attribute 'tabbar-default nil :background "black" :foreground "white" :box nil)
-(set-face-attribute 'tabbar-unselected nil :background "black" :foreground "white" :box nil)
-(set-face-attribute 'tabbar-selected nil :background "white" :foreground "black" :height 1.2 :box nil)
+(set-face-attribute 'tabbar-unselected nil :background "black" :foreground "gray70" :box nil)
+(set-face-attribute 'tabbar-selected nil :background "black" :foreground "white" :box nil :weight 'bold)
 (set-face-attribute 'tabbar-highlight nil :background "black" :foreground "white" :box nil)
-(set-face-attribute 'tabbar-button nil :background "black" :foreground "white" :box nil)
+(set-face-attribute 'tabbar-button nil :background "black" :foreground "gray70" :box nil)
 (set-face-attribute 'tabbar-separator nil :background "black" :foreground "white" :box nil)
 (defadvice tabbar-buffer-tab-label (after fixup_tab_label_space_and_flag activate)
   (setq ad-return-value
@@ -239,7 +240,7 @@
 (define-key evil-normal-state-map ",a" 'evil-window-next)
 (define-key evil-normal-state-map ",s" 'shell)
 (define-key evil-normal-state-map ",S" 'ansi-term)
-(define-key evil-normal-state-map ",f" 'ido-find-file)
+(define-key evil-normal-state-map ",f" 'helm-find-files)
 (define-key evil-normal-state-map ",gt" 'evil-scroll-line-to-top)
 (define-key evil-normal-state-map ",gg" 'evil-scroll-line-to-center)
 (define-key evil-normal-state-map ",gb" 'evil-scroll-line-to-bottom)
