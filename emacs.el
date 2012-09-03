@@ -121,8 +121,8 @@
         (delq nil
               (mapcar #'(lambda (b)
                           (cond
+                           ((string-match "^\\*helm-mode-" (buffer-name b)) nil)
                            ((member (buffer-name b) '(
-                                                    "*helm-mode-execute-extended-command*"
                                                     "*helm mini*"
                                                     "*Helm Find Files*"
                                                     "*Help*"
@@ -277,14 +277,6 @@
        (t (setq unread-command-events (append unread-command-events (list evt))))))))
 
 (custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
  '(custom-safe-themes (quote ("5d6042a3b78fcd82d6bbcaca5cfd26fa3ef3a47eb5d402948e628f265662d717" "84b941babe3bb3bc58b04a6a336992ef4751401758d5aff4aa3fade27194d5cc" "cc83fa4ffec1545d4bde6a44b1fb8431f9090874a22554920c709fa97338d0aa" "a81bc918eceaee124247648fc9682caddd713897d7fd1398856a5b61a592cb62" "3580fb8e37ee9e0bcb60762b81260290329a97f3ca19249569d404fce422342f" default))))
 (custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
  )
