@@ -238,22 +238,26 @@
 
 ; mode
 (define-key evil-visual-state-map "q" 'evil-force-normal-state)
-(define-key evil-insert-state-map "j" 'cofi/maybe-exit)
-(define-key evil-replace-state-map "j" 'cofi/maybe-exit)
-(evil-define-command cofi/maybe-exit
-  ()
+(define-key evil-insert-state-map "k" 'cofi/kd)
+(define-key evil-replace-state-map "k" 'cofi/kd)
+(define-key evil-insert-state-map "j" 'cofi/jj)
+(define-key evil-replace-state-map "j" 'cofi/jj)
+(evil-define-command cofi/kd () (interactive) (cofi/maybe-normal "k" ?d))
+(evil-define-command cofi/jj () (interactive) (cofi/maybe-normal "j" ?j))
+(evil-define-command cofi/maybe-normal
+  (first second)
   :repeat change
   (interactive)
   (let ((modified (buffer-modified-p)))
-    (insert "j")
-    (let ((evt (read-event (format "Insert %c to exit insert state" ?j) nil 0.5)))
+    (insert first)
+    (let ((evt (read-event nil nil 0.5)))
       (cond
-        ((null evt) (message ""))
-        ((and (integerp evt) (char-equal evt ?j))
-         (delete-char -1)
-         (set-buffer-modified-p modified)
-         (push 'escape unread-command-events))
-        (t (setq unread-command-events (append unread-command-events (list evt))))))))
+       ((null evt) (message ""))
+       ((and (integerp evt) (char-equal evt second))
+        (delete-char -1)
+        (set-buffer-modified-p modified)
+        (push 'escape unread-command-events))
+       (t (setq unread-command-events (append unread-command-events (list evt))))))))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
