@@ -144,6 +144,15 @@
 (define-key my-keys-mode-map "\C-l" 'tabbar-forward-tab)
 (define-key my-keys-mode-map "\C-k" 'tabbar-backward-tab)
 (define-key my-keys-mode-map "\C-j" 'tabbar-forward-group)
+(add-hook 'minibuffer-exit-hook ; auto close some completion buffer
+          '(lambda ()
+             (mapcar (lambda (buffer)
+                       (when (get-buffer buffer)
+                         (kill-buffer buffer)))
+                     '(
+                       "*Completions*"
+                       "*Ido Completions*"
+                       ))))
 
 ; Editing
 (setq-default indent-tabs-mode nil)
@@ -242,7 +251,6 @@
         ((null evt) (message ""))
         ((and (integerp evt) (char-equal evt ?j))
          (delete-char -1)
-         (forward-char)
          (set-buffer-modified-p modified)
          (push 'escape unread-command-events))
         (t (setq unread-command-events (append unread-command-events (list evt))))))))
