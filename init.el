@@ -20,8 +20,9 @@
 (add-to-list 'auto-mode-alist (cons (file-truename "~/.emacs") 'emacs-lisp-mode)) ; .emacs是symlink的话也自动进入emacs-lisp-mode
 (setq compile-command "")
 (helm-mode 1)
+(icy-mode 1)
 
-; shell
+; Shell
 (setenv "SHELL" "bash")
 (defadvice shell (around always-new-shell activate) ; 重命名新打开的buffer
   (let ((buffer (generate-new-buffer-name "*shell*"))) ad-do-it))
@@ -71,6 +72,7 @@
 (ansi-color-for-comint-mode-on) ; shell和term下显示ansi标准的颜色
 (setq redisplay-dont-pause t) ; 据说可以加速渲染
 (load "~/.emacs.d/my-modeline.el") ; modeline的定义
+(setq initial-scratch-message "")
 
 ; auto complete
 (require 'auto-complete-config)
@@ -184,8 +186,11 @@
 (add-hook 'evil-replace-state-entry-hook 'set-mode-line-color)
 (add-hook 'evil-visual-state-entry-hook 'set-mode-line-color)
 (add-hook 'evil-operator-state-entry-hook 'set-mode-line-color)
-(defadvice switch-to-buffer (after set-mode-line-color-when-switch activate) ; 切换buffer时自动切换modeline的颜色
-  (set-mode-line-color))
+; 切换tab时自动切换modeline颜色
+(defadvice tabbar-display-update (after set-mode-line-color-after-tabbar-display-update activate)
+  (set-mode-line-color)) ; 一个group全部关闭跳到另一个group时，modeline没有更新
+(defadvice tabbar-delete-tab (after set-mode-line-color-after-tabbar-delete-tab activate)
+  (set-mode-line-color)) ; 补充上面的状况
 (defun set-mode-line-color ()
   (interactive)
   (cond
@@ -219,6 +224,7 @@
 
 ; comma commands
 (define-key evil-normal-state-map ",1" 'delete-other-windows)
+(define-key evil-normal-state-map ",2" 'split-window-below)
 (define-key evil-normal-state-map ",q" 'kill-this-buffer)
 (define-key evil-normal-state-map ",Q" 'evil-save-and-quit)
 (define-key evil-normal-state-map ",w" 'evil-write)
@@ -228,7 +234,7 @@
 (define-key evil-normal-state-map ",a" 'evil-window-next)
 (define-key evil-normal-state-map ",s" 'shell)
 (define-key evil-normal-state-map ",S" 'ansi-term)
-(define-key evil-normal-state-map ",f" 'helm-find-files)
+(define-key evil-normal-state-map ",f" 'find-file)
 (define-key evil-normal-state-map ",gt" 'evil-scroll-line-to-top)
 (define-key evil-normal-state-map ",gg" 'evil-scroll-line-to-center)
 (define-key evil-normal-state-map ",gb" 'evil-scroll-line-to-bottom)
