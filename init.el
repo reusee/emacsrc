@@ -26,6 +26,12 @@
 (setenv "SHELL" "bash")
 (defadvice shell (around always-new-shell activate) ; 重命名新打开的buffer
   (let ((buffer (generate-new-buffer-name "*shell*"))) ad-do-it))
+(defun auto-kill-buffer-when-exit (process event) ; shell中exit命令后自动关闭buffer
+  (when (memq (process-status process) '(signal exit))
+      (kill-buffer (process-buffer process))))
+(add-hook 'shell-mode-hook
+          #'(lambda () (set-process-sentinel (get-buffer-process (current-buffer))
+                                             'auto-kill-buffer-when-exit)))
 (defadvice term-sentinel (around my-advice-term-sentinel (proc msg) activate) ; ansi-term里exit命令会关闭buffer
   (if (memq (process-status proc) '(signal exit))
       (let ((buffer (process-buffer proc)))
