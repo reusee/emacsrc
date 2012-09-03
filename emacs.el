@@ -127,6 +127,7 @@
                                                     "*Helm Find Files*"
                                                     "*Help*"
                                                     "*Packages*"
+                                                    "*Completions*"
                                                     )) nil)
                            ((eq (current-buffer) b) b)
                            ((buffer-file-name b) b)
