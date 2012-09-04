@@ -197,7 +197,7 @@
   (interactive)
   (cond
    ((string-equal mode-name "Help")
-    (set-face-background 'modeline "#9c0"))
+    (set-face-background 'modeline "red"))
    ((evil-normal-state-p)
     (set-face-background 'modeline "#111"))
    ((evil-insert-state-p)
@@ -210,6 +210,8 @@
     (set-face-background 'modeline "#c09"))
    ((evil-emacs-state-p)
     (set-face-background 'modeline "#c90"))
+   ((evil-motion-state-p)
+    (set-face-background 'modeline "#9c0"))
     ))
 
 ; KEYS
