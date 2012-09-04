@@ -192,11 +192,7 @@
 (add-hook 'evil-replace-state-entry-hook 'set-mode-line-color)
 (add-hook 'evil-visual-state-entry-hook 'set-mode-line-color)
 (add-hook 'evil-operator-state-entry-hook 'set-mode-line-color)
-; 切换tab时自动切换modeline颜色
-(defadvice tabbar-display-update (after set-mode-line-color-after-tabbar-display-update activate)
-  (set-mode-line-color)) ; 一个group全部关闭跳到另一个group时，modeline没有更新
-(defadvice tabbar-delete-tab (after set-mode-line-color-after-tabbar-delete-tab activate)
-  (set-mode-line-color)) ; 补充上面的状况
+(add-hook 'window-configuration-change-hook 'set-mode-line-color) ; 窗口有变化时自动切换modeline颜色
 (defun set-mode-line-color ()
   (interactive)
   (cond
