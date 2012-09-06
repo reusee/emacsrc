@@ -18,9 +18,16 @@
 (add-hook 'server-switch-hook (lambda () ; client模式下，关闭buffer时不提示
   (remove-hook 'kill-buffer-query-functions 'server-kill-buffer-query-function)))
 (add-to-list 'auto-mode-alist (cons (file-truename "~/.emacs") 'emacs-lisp-mode)) ; .emacs是symlink的话也自动进入emacs-lisp-mode
-(setq compile-command "")
 (helm-mode 1)
 (icy-mode 1)
+
+; Compile
+(setq compile-command "")
+(define-key evil-insert-state-map "\C-o" 'save-and-recompile)
+(evil-define-command save-and-recompile
+  ()
+  (interactive)
+  (progn (save-buffer) (recompile) (other-window)))
 
 ; Shell
 (setenv "SHELL" "bash")
@@ -105,6 +112,9 @@
 (setq bookmark-default-file "~/.emacs.d/bookmarks" bookmark-save-flag 1)
 (setq delete-by-moving-to-trash t) ; 使用系统垃圾箱删除文件
 (add-hook 'before-save-hook 'delete-trailing-whitespace) ; 保存之前删除行尾的空格
+
+; Magic Mode
+(add-to-list 'magic-mode-alist '("#!/usr/bin/env python" . python-mode))
 
 ; Backup
 (setq backup-directory-alist `(("." . "~/.emacs.d/backup")))
@@ -224,6 +234,8 @@
 (define-key evil-normal-state-map "e" 'ace-jump-char-mode)
 (define-key evil-normal-state-map "U" 'scroll-down)
 (define-key evil-normal-state-map "s" 'evil-find-char-backward)
+(define-key evil-normal-state-map "H" 'tabbar-backward-tab)
+(define-key evil-normal-state-map "L" 'tabbar-forward-tab)
 (define-key evil-normal-state-map "M" 'scroll-up)
 
 ; comma commands
@@ -233,6 +245,7 @@
 (define-key evil-normal-state-map ",Q" 'evil-save-and-quit)
 (define-key evil-normal-state-map ",w" 'evil-write)
 (define-key evil-normal-state-map ",e" 'eval-last-sexp)
+(define-key evil-visual-state-map ",e" 'eval-region)
 (define-key evil-normal-state-map ",r" 'execute-extended-command)
 (define-key evil-normal-state-map ",t" 'undo-tree-redo)
 (define-key evil-normal-state-map ",a" 'evil-window-next)
@@ -243,6 +256,7 @@
 (define-key evil-normal-state-map ",gg" 'evil-scroll-line-to-center)
 (define-key evil-normal-state-map ",gb" 'evil-scroll-line-to-bottom)
 (define-key evil-normal-state-map ",z" 'save-buffers-kill-terminal)
+(define-key evil-normal-state-map ",x" 'icicle-pp-eval-expression)
 (define-key evil-normal-state-map ",c" 'compile)
 (define-key evil-normal-state-map ",v" 'iswitchb-buffer)
 (define-key evil-normal-state-map ",ba" 'bookmark-set)
