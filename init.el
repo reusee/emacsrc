@@ -23,11 +23,6 @@
 
 ; Compile
 (setq compile-command "")
-(define-key evil-insert-state-map "\C-o" 'save-and-recompile)
-(evil-define-command save-and-recompile
-  ()
-  (interactive)
-  (progn (save-buffer) (recompile) (other-window)))
 
 ; Shell
 (setenv "SHELL" "bash")
@@ -160,12 +155,6 @@
 (set-face-attribute 'tabbar-highlight nil :background "black" :foreground "white" :box nil)
 (set-face-attribute 'tabbar-button nil :background "black" :foreground "gray70" :box nil)
 (set-face-attribute 'tabbar-separator nil :background "black" :foreground "white" :box nil)
-(defadvice tabbar-buffer-tab-label (after fixup_tab_label_space_and_flag activate) ; 修改过的文件，tabbar上显示+号
-  (setq ad-return-value
-        (if (and (buffer-modified-p (tabbar-tab-value tab))
-                 (buffer-file-name (tabbar-tab-value tab)))
-            (concat " + " (concat ad-return-value " "))
-          (concat " " (concat ad-return-value " ")))))
 (defun ztl-modification-state-change ()
   (tabbar-set-template tabbar-current-tabset nil)
   (tabbar-display-update))
@@ -239,31 +228,41 @@
 (define-key evil-normal-state-map "M" 'scroll-up)
 
 ; comma commands
-(define-key evil-normal-state-map ",1" 'delete-other-windows)
-(define-key evil-normal-state-map ",2" 'split-window-below)
-(define-key evil-normal-state-map ",q" 'kill-this-buffer)
-(define-key evil-normal-state-map ",Q" 'evil-save-and-quit)
-(define-key evil-normal-state-map ",w" 'evil-write)
-(define-key evil-normal-state-map ",e" 'eval-last-sexp)
+(setq comma-commands
+      (list
+       ["1" delete-other-windows]
+       ["2" split-window-below]
+       ["q" kill-this-buffer]
+       ["Q" evil-save-and-quit]
+       ["s" shell]
+       ["w" evil-write]
+       ["e" eval-last-sexp]
+       ["r" execute-extended-command]
+       ["t" undo-tree-redo]
+       ["a" evil-window-next]
+       ["S" ansi-term]
+       ["f" find-file]
+       ["gt" evil-scroll-line-to-top]
+       ["gg" evil-scroll-line-to-center]
+       ["gb" evil-scroll-line-to-bottom]
+       ["z" save-buffers-kill-terminal]
+       ["x" icicle-pp-eval-expression]
+       ["c" compile]
+       ["v" iswitchb-buffer]
+       ["ba" bookmark-set]
+       ["bd" bookmark-delete]
+       ["bj" bookmark-jump]
+       ["m" evil-record-macro]
+       ["n" evil-execute-macro]
+       ))
+(mapcar
+ (lambda (info)
+   (let ((cmd (elt info 0)) (func (elt info 1)))
+     (define-key evil-normal-state-map (concat "," cmd) func)
+     (define-key evil-insert-state-map (concat "\C-i" cmd) func)))
+ comma-commands)
+
 (define-key evil-visual-state-map ",e" 'eval-region)
-(define-key evil-normal-state-map ",r" 'execute-extended-command)
-(define-key evil-normal-state-map ",t" 'undo-tree-redo)
-(define-key evil-normal-state-map ",a" 'evil-window-next)
-(define-key evil-normal-state-map ",s" 'shell)
-(define-key evil-normal-state-map ",S" 'ansi-term)
-(define-key evil-normal-state-map ",f" 'find-file)
-(define-key evil-normal-state-map ",gt" 'evil-scroll-line-to-top)
-(define-key evil-normal-state-map ",gg" 'evil-scroll-line-to-center)
-(define-key evil-normal-state-map ",gb" 'evil-scroll-line-to-bottom)
-(define-key evil-normal-state-map ",z" 'save-buffers-kill-terminal)
-(define-key evil-normal-state-map ",x" 'icicle-pp-eval-expression)
-(define-key evil-normal-state-map ",c" 'compile)
-(define-key evil-normal-state-map ",v" 'iswitchb-buffer)
-(define-key evil-normal-state-map ",ba" 'bookmark-set)
-(define-key evil-normal-state-map ",bd" 'bookmark-delete)
-(define-key evil-normal-state-map ",bj" 'bookmark-jump)
-(define-key evil-normal-state-map ",m" 'evil-record-macro)
-(define-key evil-normal-state-map ",n" 'evil-execute-macro)
 
 ; mode
 (define-key evil-visual-state-map "q" 'evil-force-normal-state)
