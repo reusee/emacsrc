@@ -83,8 +83,8 @@
 (setq initial-scratch-message "")
 
 ; auto complete
-(require 'auto-complete-config)
-(ac-config-default)
+;(require 'auto-complete-config)
+;(ac-config-default)
 (setq-default ac-sources '(ac-source-words-in-same-mode-buffers
                            ac-source-abbrev
                            ac-source-dictionary))
@@ -114,7 +114,7 @@
 ; Backup
 (setq backup-directory-alist `(("." . "~/.emacs.d/backup")))
 (setq version-control t) ; 开启备份文件版本控制
-(setq kept-old-versions 2) ; 保存最初的文件
+(setq kept-old-versions 8) ; 保存最初的文件
 (setq kept-new-versions 256) ; 保存最新的文件
 (setq delete-old-versions t) ; 删除不符合以上条件的文件
 (setq auto-save-file-name-transforms
@@ -259,8 +259,9 @@
  (lambda (info)
    (let ((cmd (elt info 0)) (func (elt info 1)))
      (define-key evil-normal-state-map (concat "," cmd) func)
-     (define-key evil-insert-state-map (concat "\C-i" cmd) func)))
- comma-commands)
+     (define-key evil-insert-state-map (concat "\C-u" cmd) func)
+     (define-key evil-insert-state-map (concat "\M-j" cmd) func)
+     )) comma-commands)
 
 (define-key evil-visual-state-map ",e" 'eval-region)
 
@@ -278,7 +279,7 @@
   (interactive)
   (let ((modified (buffer-modified-p)))
     (insert first)
-    (let ((evt (read-event nil nil 0.5)))
+    (let ((evt (read-event nil nil 0.3)))
       (cond
        ((null evt) (message ""))
        ((and (integerp evt) (char-equal evt second))
