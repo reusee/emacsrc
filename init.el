@@ -170,6 +170,9 @@
 (define-key my-keys-mode-map "\C-l" 'tabbar-forward-tab) ; 全局的tab控制键
 (define-key my-keys-mode-map "\C-k" 'tabbar-backward-tab)
 (define-key my-keys-mode-map "\C-j" 'tabbar-forward-group)
+(define-key my-keys-mode-map "\M-l" 'tabbar-forward-tab)
+(define-key my-keys-mode-map "\M-k" 'tabbar-backward-tab)
+(define-key my-keys-mode-map "\M-j" 'tabbar-forward-group)
 
 ; Editing
 (setq-default indent-tabs-mode nil) ; 禁用tab缩进
@@ -178,7 +181,7 @@
 (setq-default tab-stop-list (number-sequence 2 300 2))
 (add-hook 'python-mode-hook '(lambda () ; 设python模式下的缩进量
                                (setq python-indent 2)))
-(electric-pair-mode 1) ; 自动输入成对的括号
+(electric-pair-mode -1) ; 自动输入成对的括号
 
 ; Load evil
 (setq evil-default-cursor t) ; 使用主题默认的光标
@@ -221,11 +224,15 @@
 ; normal state command
 (define-key evil-normal-state-map "q" 'evil-visual-block)
 (define-key evil-normal-state-map "e" 'ace-jump-char-mode)
-(define-key evil-normal-state-map "U" 'scroll-down)
 (define-key evil-normal-state-map "s" 'evil-find-char-backward)
 (define-key evil-normal-state-map "H" 'tabbar-backward-tab)
 (define-key evil-normal-state-map "L" 'tabbar-forward-tab)
+(define-key evil-normal-state-map "U" 'scroll-down)
 (define-key evil-normal-state-map "M" 'scroll-up)
+(define-key evil-motion-state-map "H" 'tabbar-backward-tab)
+(define-key evil-motion-state-map "L" 'tabbar-forward-tab)
+(define-key evil-motion-state-map "U" 'scroll-down)
+(define-key evil-motion-state-map "M" 'scroll-up)
 
 ; comma commands
 (setq comma-commands
@@ -255,10 +262,12 @@
        ["m" evil-record-macro]
        ["n" evil-execute-macro]
        ))
+(define-key evil-motion-state-map "," nil)
 (mapcar
  (lambda (info)
    (let ((cmd (elt info 0)) (func (elt info 1)))
      (define-key evil-normal-state-map (concat "," cmd) func)
+     (define-key evil-motion-state-map (concat "," cmd) func)
      (define-key evil-insert-state-map (concat "\C-u" cmd) func)
      (define-key evil-insert-state-map (concat "\M-j" cmd) func)
      )) comma-commands)
