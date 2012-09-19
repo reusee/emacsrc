@@ -20,6 +20,8 @@
 (add-to-list 'auto-mode-alist (cons (file-truename "~/.emacs") 'emacs-lisp-mode)) ; .emacs是symlink的话也自动进入emacs-lisp-mode
 (helm-mode 1)
 (icy-mode 1)
+(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+(add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 
 ; Compile
 (setq compile-command "")
@@ -167,12 +169,12 @@
 (mouse-wheel-mode 1) ; 启用鼠标滚轮
 (tabbar-mode 1)
 (tabbar-mwheel-mode -1) ; 禁用鼠标滚轮切换tab
-(define-key my-keys-mode-map "\C-l" 'tabbar-forward-tab) ; 全局的tab控制键
+(define-key my-keys-mode-map "\C-j" 'tabbar-forward-tab) ; 全局的tab控制键
 (define-key my-keys-mode-map "\C-k" 'tabbar-backward-tab)
-(define-key my-keys-mode-map "\C-j" 'tabbar-forward-group)
-(define-key my-keys-mode-map "\M-l" 'tabbar-forward-tab)
+(define-key my-keys-mode-map "\C-l" 'tabbar-forward-group)
+(define-key my-keys-mode-map "\M-j" 'tabbar-forward-tab)
 (define-key my-keys-mode-map "\M-k" 'tabbar-backward-tab)
-(define-key my-keys-mode-map "\M-j" 'tabbar-forward-group)
+(define-key my-keys-mode-map "\M-l" 'tabbar-forward-group)
 
 ; Editing
 (setq-default indent-tabs-mode nil) ; 禁用tab缩进
@@ -187,6 +189,7 @@
 (setq evil-default-cursor t) ; 使用主题默认的光标
 (require 'evil)
 (evil-mode 1)
+(setq evil-complete-all-buffers -1)
 
 ; mode line color
 (add-hook 'evil-normal-state-entry-hook 'set-mode-line-color) ; 进入另一个模式时，自动切换modeline的颜色
@@ -220,6 +223,16 @@
 
 ; edit
 (define-key evil-insert-state-map "\C-\\" 'delete-horizontal-space)
+;(define-key my-keys-mode-map (kbd "DEL") 'backward-delete-whitespace-to-column)
+;(defun backward-delete-whitespace-to-column ()
+;  (interactive)
+;  (let ((movement (% (current-column) tab-width))
+;        (p (point)))
+;    (when (= movement 0) (setq movement tab-width))
+;    (save-match-data
+;      (if (string-match "\\w*\\(\\s-+\\)$" (buffer-substring-no-properties (- p movement) p))
+;          (backward-delete-char-untabify (- (match-end 1) (match-beginning 1)))
+;        (call-interactively 'backward-delete-char-untabify)))))
 
 ; normal state command
 (define-key evil-normal-state-map "q" 'evil-visual-block)
@@ -298,6 +311,14 @@
        (t (setq unread-command-events (append unread-command-events (list evt))))))))
 
 (custom-set-variables
- '(custom-safe-themes (quote ("5d6042a3b78fcd82d6bbcaca5cfd26fa3ef3a47eb5d402948e628f265662d717" "84b941babe3bb3bc58b04a6a336992ef4751401758d5aff4aa3fade27194d5cc" "cc83fa4ffec1545d4bde6a44b1fb8431f9090874a22554920c709fa97338d0aa" "a81bc918eceaee124247648fc9682caddd713897d7fd1398856a5b61a592cb62" "3580fb8e37ee9e0bcb60762b81260290329a97f3ca19249569d404fce422342f" default))))
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes (quote ("6615e5aefae7d222a0c252c81aac52c4efb2218d35dfbb93c023c4b94d3fa0db" "5d6042a3b78fcd82d6bbcaca5cfd26fa3ef3a47eb5d402948e628f265662d717" "84b941babe3bb3bc58b04a6a336992ef4751401758d5aff4aa3fade27194d5cc" "cc83fa4ffec1545d4bde6a44b1fb8431f9090874a22554920c709fa97338d0aa" "a81bc918eceaee124247648fc9682caddd713897d7fd1398856a5b61a592cb62" "3580fb8e37ee9e0bcb60762b81260290329a97f3ca19249569d404fce422342f" default))))
 (custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  )
