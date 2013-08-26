@@ -1,324 +1,83 @@
-; Package
 (require 'package)
+(add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 (package-initialize)
-(add-to-list 'package-archives '("elpa" . "http://tromey.com/elpa/"))
-(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
-(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/"))
-(add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
 
-; System
-(require 'cl)
-(when window-system
-  (setq x-select-enable-clipboard t)
-  (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
-)
-(setq ido-enable-flex-matching t)
-(setq ido-everywhere t)
-(ido-mode 1)
-(add-hook 'server-switch-hook (lambda () ; client模式下，关闭buffer时不提示
-  (remove-hook 'kill-buffer-query-functions 'server-kill-buffer-query-function)))
-(add-to-list 'auto-mode-alist (cons (file-truename "~/.emacs") 'emacs-lisp-mode)) ; .emacs是symlink的话也自动进入emacs-lisp-mode
-(helm-mode 1)
-(icy-mode 1)
-(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-(add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-
-; Compile
-(setq compile-command "")
-
-; Shell
-(setenv "SHELL" "bash")
-(defadvice shell (around always-new-shell activate) ; 重命名新打开的buffer
-  (let ((buffer (generate-new-buffer-name "*shell*"))) ad-do-it))
-(defun auto-kill-buffer-when-exit (process event) ; shell中exit命令后自动关闭buffer
-  (when (memq (process-status process) '(signal exit))
-      (kill-buffer (process-buffer process))))
-(add-hook 'shell-mode-hook
-          #'(lambda () (set-process-sentinel (get-buffer-process (current-buffer))
-                                             'auto-kill-buffer-when-exit)))
-(defadvice term-sentinel (around my-advice-term-sentinel (proc msg) activate) ; ansi-term里exit命令会关闭buffer
-  (if (memq (process-status proc) '(signal exit))
-      (let ((buffer (process-buffer proc)))
-        ad-do-it
-        (kill-buffer buffer))
-    ad-do-it))
-(defvar my-term-shell "/bin/bash") ; 执行ansi-term时不询问采用的shell
-(defadvice ansi-term (before force-bash activate)
-  (interactive (list my-term-shell)))
-(defun my-term-hook () ; 让ansi-term里的url可以点击
-  (goto-address-mode))
-(add-hook 'term-mode-hook 'my-term-hook)
-
-; Override Minor Mode
-(defvar my-keys-mode-map (make-keymap) "my-keys-mode keymap.")
-(define-minor-mode my-keys-mode
-  t " my-keys" 'my-keys-mode-map)
-(my-keys-mode 1)
-(defun my-minibuffer-setup-hook () ; minibuffer里不采用此minor mode
-  (my-keys-mode 0))
-(add-hook 'minibuffer-setup-hook 'my-minibuffer-setup-hook)
-
-; Appearance
-(load-theme 'Amelie t)
-(setq ring-bell-function 'ignore) ; 禁用蜂鸣器
-(setq scroll-margin 0 scroll-step 1 scroll-conservatively 10000) ; 平滑滚动
-(setq inhibit-startup-message t) ; 不显示启动页面
-(when window-system
-  (setq mouse-wheel-scroll-amount '(3 ((shift) . 1))) ; 鼠标滚动行数
-  (setq mouse-wheel-progressive-speed nil) ; 鼠标没有加速
-  (tool-bar-mode -1) ; 禁用工具栏
-  (scroll-bar-mode -1) ; 禁用滚动条
-)
-(menu-bar-mode -1) ; 禁用菜单栏
-(blink-cursor-mode -1) ; 禁止光标闪烁
-(set-face-attribute 'default nil :font "Monaco-14") ; 默认字体
-(show-paren-mode 1) ; 高亮显示匹配的括号
-(setq show-paren-delay 0)
-(set-face-foreground 'show-paren-match-face "red")
-(global-hl-line-mode 1) ; 高亮当前行
-(set-face-attribute hl-line-face nil :background "#111")
-(setq evil-flash-delay 36000) ; 搜索结果高亮时间
-(set-cursor-color "white") ; 光标颜色
-(ansi-color-for-comint-mode-on) ; shell和term下显示ansi标准的颜色
-(setq redisplay-dont-pause t) ; 据说可以加速渲染
-(load "~/.emacs.d/my-modeline.el") ; modeline的定义
-(setq initial-scratch-message "")
-
-; auto complete
-;(require 'auto-complete-config)
-;(ac-config-default)
-(setq-default ac-sources '(ac-source-words-in-same-mode-buffers
-                           ac-source-abbrev
-                           ac-source-dictionary))
-(setq ac-ignore-case nil) ; 自动完成时，大小写敏感
-
-; Navigation
+(require 'evil-leader) (global-evil-leader-mode) (evil-leader/set-leader ",")
+(require 'evil) (evil-mode 1)
+(require 'key-chord) (key-chord-mode 1)
 (require 'ace-jump-mode)
+(require 'helm-config)
+(require 'auto-complete-config) (ac-config-default) (semantic-mode t)
+(require 'elscreen) (elscreen-start)
+;(add-to-list 'load-path "/media/data/repos/ensime/src/main/elisp/")
+;(require 'ensime) (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
 
-; File
-(prefer-coding-system 'utf-8)
-(set-default-coding-systems 'utf-8)
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(setq default-buffer-file-coding-system 'utf-8)
-(setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
-(setq vc-follow-symlinks t) ; 打开被版本控制系统控制的文件时，不询问
-(toggle-diredp-find-file-reuse-dir 1) ; 用dired打开文件时，使用当前buffer，而不是新建一个
-(require 'uniquify)
-(setq uniquify-buffer-name-style 'post-forward uniquify-separator ":") ; 打开同名文件时，加上目录名作为buffer名
-(setq bookmark-default-file "~/.emacs.d/bookmarks" bookmark-save-flag 1)
-(setq delete-by-moving-to-trash t) ; 使用系统垃圾箱删除文件
-(add-hook 'before-save-hook 'delete-trailing-whitespace) ; 保存之前删除行尾的空格
+(setq explicit-shell-file-name "/usr/bin/bash")
 
-; Magic Mode
-(add-to-list 'magic-mode-alist '("#!/usr/bin/env python" . python-mode))
+(setq backup-directory-alist `((".*" . "~/.emacs.d/saves")))
+(setq auto-save-file-name-transforms `((".*", "~/.emacs.d/saves", t)))
 
-; Backup
-(setq backup-directory-alist `(("." . "~/.emacs.d/backup")))
-(setq version-control t) ; 开启备份文件版本控制
-(setq kept-old-versions 8) ; 保存最初的文件
-(setq kept-new-versions 256) ; 保存最新的文件
-(setq delete-old-versions t) ; 删除不符合以上条件的文件
-(setq auto-save-file-name-transforms
-      `((".*" ,temporary-file-directory t)))
-
-; Buffer
-(iswitchb-mode t)
-(require 'tabbar)
-(setq tabbar-buffer-groups-function ; tabbar中的buffer分组
-      (lambda ()
-        (list (cond
-               ((string-equal "*" (substring (buffer-name) 0 1)) "System")
-               (t "User")
-               ))))
-(setq tabbar-buffer-list-function ; tabbar中的buffer过滤
-      (lambda ()
-        (delq nil
-              (mapcar #'(lambda (b)
-                          (cond
-                           ((string-match "^\\*helm-mode-" (buffer-name b)) nil)
-                           ((member (buffer-name b) '(
-                                                    "*helm mini*"
-                                                    "*Helm Find Files*"
-                                                    "*Help*"
-                                                    "*Packages*"
-                                                    "*Completions*"
-                                                    "*Compile-Log*"
-                                                    )) nil)
-                           ((eq (current-buffer) b) b)
-                           ((buffer-file-name b) b)
-                           ((char-equal ?\  (aref (buffer-name b) 0)) nil)
-                           ((buffer-live-p b) b)
-                           ))
-                      (buffer-list)))))
-(set-face-attribute 'tabbar-default nil :background "black" :foreground "white" :box nil)
-(set-face-attribute 'tabbar-unselected nil :background "black" :foreground "gray70" :box nil)
-(set-face-attribute 'tabbar-selected nil :background "black" :foreground "white" :box nil :weight 'bold)
-(set-face-attribute 'tabbar-highlight nil :background "black" :foreground "white" :box nil)
-(set-face-attribute 'tabbar-button nil :background "black" :foreground "gray70" :box nil)
-(set-face-attribute 'tabbar-separator nil :background "black" :foreground "white" :box nil)
-(defun ztl-modification-state-change ()
-  (tabbar-set-template tabbar-current-tabset nil)
-  (tabbar-display-update))
-(defun ztl-on-buffer-modification ()
-  (set-buffer-modified-p t)
-  (ztl-modification-state-change))
-(add-hook 'after-save-hook 'ztl-modification-state-change)
-(add-hook 'after-revert-hook 'ztl-modification-state-change)
-(add-hook 'first-change-hook 'ztl-on-buffer-modification)
-(mouse-wheel-mode 1) ; 启用鼠标滚轮
-(tabbar-mode 1)
-(tabbar-mwheel-mode -1) ; 禁用鼠标滚轮切换tab
-(define-key my-keys-mode-map "\C-j" 'tabbar-forward-tab) ; 全局的tab控制键
-(define-key my-keys-mode-map "\C-k" 'tabbar-backward-tab)
-(define-key my-keys-mode-map "\C-l" 'tabbar-forward-group)
-(define-key my-keys-mode-map "\M-j" 'tabbar-forward-tab)
-(define-key my-keys-mode-map "\M-k" 'tabbar-backward-tab)
-(define-key my-keys-mode-map "\M-l" 'tabbar-forward-group)
-
-; Editing
-(setq-default indent-tabs-mode nil) ; 禁用tab缩进
-(setq evil-shift-width 2) ; 缩进量
+(setq-default indent-tabs-mode nil)
 (setq-default tab-width 2)
+(setq-default default-tab-width 2)
+(setq-default evil-shift-width 2)
 (setq-default tab-stop-list (number-sequence 2 300 2))
-(add-hook 'python-mode-hook '(lambda () ; 设python模式下的缩进量
-                               (setq python-indent 2)))
-(electric-pair-mode -1) ; 自动输入成对的括号
 
-; Load evil
-(setq evil-default-cursor t) ; 使用主题默认的光标
-(require 'evil)
-(evil-mode 1)
-(setq evil-complete-all-buffers -1)
+(kill-buffer "*scratch*")
+(load-theme 'molokai t)
+(menu-bar-mode -1)
+(show-paren-mode 1) (setq show-paren-delay 0)
+(setq evil-flash-delay 36000)
+(setq redisplay-dont-pause t)
+(lexical-let ((default-color '("#333333" . "#ffffff")))
+  (add-hook 'post-command-hook
+	    (lambda ()
+	      (let ((color (cond ((minibufferp) default-color)
+				 ((evil-insert-state-p) '("#e80000" . "#ffffff"))
+				 ((evil-emacs-state-p)  '("#444488" . "#ffffff"))
+				 ((buffer-modified-p)   '("#006fa0" . "#ffffff"))
+				 (t default-color))))
+		(set-face-background 'mode-line (car color))
+		(set-face-foreground 'mode-line (cdr color))))))
+(setq elscreen-tab-display-control nil)
+(setq elscreen-tab-display-kill-screen nil)
+(set-face-attribute 'elscreen-tab-background-face nil :background "black" :foreground "whie" :underline nil)
+(set-face-attribute 'elscreen-tab-current-screen-face nil :background "black" :foreground "lightgreen" :underline nil)
+(set-face-attribute 'elscreen-tab-other-screen-face nil :background "black" :foreground "grey" :underline nil)
 
-; mode line color
-(add-hook 'evil-normal-state-entry-hook 'set-mode-line-color) ; 进入另一个模式时，自动切换modeline的颜色
-(add-hook 'evil-insert-state-entry-hook 'set-mode-line-color)
-(add-hook 'evil-replace-state-entry-hook 'set-mode-line-color)
-(add-hook 'evil-visual-state-entry-hook 'set-mode-line-color)
-(add-hook 'evil-operator-state-entry-hook 'set-mode-line-color)
-(add-hook 'window-configuration-change-hook 'set-mode-line-color) ; 窗口有变化时自动切换modeline颜色
-(defun set-mode-line-color ()
-  (interactive)
-  (cond
-   ((string-equal mode-name "Help")
-    (set-face-background 'modeline "red"))
-   ((evil-normal-state-p)
-    (set-face-background 'modeline "#111"))
-   ((evil-insert-state-p)
-    (set-face-background 'modeline "#09c"))
-   ((evil-replace-state-p)
-    (set-face-background 'modeline "#0c9"))
-   ((evil-visual-state-p)
-    (set-face-background 'modeline "#90c"))
-   ((evil-operator-state-p)
-    (set-face-background 'modeline "#c09"))
-   ((evil-emacs-state-p)
-    (set-face-background 'modeline "#c90"))
-   ((evil-motion-state-p)
-    (set-face-background 'modeline "#9c0"))
-    ))
+(define-key evil-motion-state-map (kbd "RET") nil)
+(define-key evil-motion-state-map " " nil)
 
-; KEYS
-
-; edit
-(define-key evil-insert-state-map "\C-\\" 'delete-horizontal-space)
-;(define-key my-keys-mode-map (kbd "DEL") 'backward-delete-whitespace-to-column)
-;(defun backward-delete-whitespace-to-column ()
-;  (interactive)
-;  (let ((movement (% (current-column) tab-width))
-;        (p (point)))
-;    (when (= movement 0) (setq movement tab-width))
-;    (save-match-data
-;      (if (string-match "\\w*\\(\\s-+\\)$" (buffer-substring-no-properties (- p movement) p))
-;          (backward-delete-char-untabify (- (match-end 1) (match-beginning 1)))
-;        (call-interactively 'backward-delete-char-untabify)))))
-
-; normal state command
-(define-key evil-normal-state-map "q" 'evil-visual-block)
-(define-key evil-normal-state-map "e" 'ace-jump-char-mode)
+(define-key evil-normal-state-map " " 'evil-ex)
+(define-key evil-normal-state-map "M" 'evil-scroll-down)
+(define-key evil-normal-state-map "U" 'evil-scroll-up)
 (define-key evil-normal-state-map "s" 'evil-find-char-backward)
-(define-key evil-normal-state-map "H" 'tabbar-backward-tab)
-(define-key evil-normal-state-map "L" 'tabbar-forward-tab)
-(define-key evil-normal-state-map "U" 'scroll-down)
-(define-key evil-normal-state-map "M" 'scroll-up)
-(define-key evil-motion-state-map "H" 'tabbar-backward-tab)
-(define-key evil-motion-state-map "L" 'tabbar-forward-tab)
-(define-key evil-motion-state-map "U" 'scroll-down)
-(define-key evil-motion-state-map "M" 'scroll-up)
+(define-key evil-normal-state-map "H" 'elscreen-previous)
+(define-key evil-normal-state-map "L" 'elscreen-next)
 
-; comma commands
-(setq comma-commands
-      (list
-       ["1" delete-other-windows]
-       ["2" split-window-below]
-       ["q" kill-this-buffer]
-       ["Q" evil-save-and-quit]
-       ["s" shell]
-       ["w" evil-write]
-       ["e" eval-last-sexp]
-       ["r" execute-extended-command]
-       ["t" undo-tree-redo]
-       ["a" evil-window-next]
-       ["S" ansi-term]
-       ["f" find-file]
-       ["gt" evil-scroll-line-to-top]
-       ["gg" evil-scroll-line-to-center]
-       ["gb" evil-scroll-line-to-bottom]
-       ["z" save-buffers-kill-terminal]
-       ["x" icicle-pp-eval-expression]
-       ["c" compile]
-       ["v" iswitchb-buffer]
-       ["ba" bookmark-set]
-       ["bd" bookmark-delete]
-       ["bj" bookmark-jump]
-       ["m" evil-record-macro]
-       ["n" evil-execute-macro]
-       ))
-(define-key evil-motion-state-map "," nil)
-(mapcar
- (lambda (info)
-   (let ((cmd (elt info 0)) (func (elt info 1)))
-     (define-key evil-normal-state-map (concat "," cmd) func)
-     (define-key evil-motion-state-map (concat "," cmd) func)
-     (define-key evil-insert-state-map (concat "\C-u" cmd) func)
-     (define-key evil-insert-state-map (concat "\M-j" cmd) func)
-     )) comma-commands)
+(define-key evil-insert-state-map (kbd "RET") 'newline-and-indent)
+(key-chord-define evil-insert-state-map "kd" 'evil-normal-state)
 
-(define-key evil-visual-state-map ",e" 'eval-region)
+(defun make-ex (cmd) 
+  (lexical-let ((cmd cmd)) (lambda () (interactive) (evil-ex cmd))))
+(evil-leader/set-key
+  "1" 'delete-other-windows
+  "2" 'split-window-below
 
-; mode
-(define-key evil-visual-state-map "q" 'evil-force-normal-state)
-(define-key evil-insert-state-map "k" 'cofi/kd) ; 用kd返回normal状态
-(define-key evil-replace-state-map "k" 'cofi/kd)
-(define-key evil-insert-state-map "j" 'cofi/jj) ; 用jj返回normal状态
-(define-key evil-replace-state-map "j" 'cofi/jj)
-(evil-define-command cofi/kd () (interactive) (cofi/maybe-normal "k" ?d))
-(evil-define-command cofi/jj () (interactive) (cofi/maybe-normal "j" ?j))
-(evil-define-command cofi/maybe-normal
-  (first second)
-  :repeat change
-  (interactive)
-  (let ((modified (buffer-modified-p)))
-    (insert first)
-    (let ((evt (read-event nil nil 0.3)))
-      (cond
-       ((null evt) (message ""))
-       ((and (integerp evt) (char-equal evt second))
-        (delete-char -1)
-        (set-buffer-modified-p modified)
-        (push 'escape unread-command-events))
-       (t (setq unread-command-events (append unread-command-events (list evt))))))))
+  "q" 'elscreen-kill
+  "w" 'evil-write
+  "e" 'eval-last-sexp
+  "r" 'execute-extended-command
+  "t" (lambda () (interactive) (elscreen-create) (evil-ex "e "))
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes (quote ("6615e5aefae7d222a0c252c81aac52c4efb2218d35dfbb93c023c4b94d3fa0db" "5d6042a3b78fcd82d6bbcaca5cfd26fa3ef3a47eb5d402948e628f265662d717" "84b941babe3bb3bc58b04a6a336992ef4751401758d5aff4aa3fade27194d5cc" "cc83fa4ffec1545d4bde6a44b1fb8431f9090874a22554920c709fa97338d0aa" "a81bc918eceaee124247648fc9682caddd713897d7fd1398856a5b61a592cb62" "3580fb8e37ee9e0bcb60762b81260290329a97f3ca19249569d404fce422342f" default))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+  "a" (make-ex "!ack ")
+  "s" 'shell
+  "d" 'helm-mini
+  "f" 'ace-jump-char-mode
+
+  "z" 'evil-ex-nohighlight
+  "x" 'save-buffers-kill-terminal
+  "c" (make-ex "!")
+  "v" 'evil-visual-block
+  "b" 'switch-to-buffer
+  )
