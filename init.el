@@ -22,6 +22,9 @@
 (setq-default evil-shift-width 2)
 (setq-default tab-stop-list (number-sequence 2 300 2))
 
+(setq split-height-threshold 0)
+(setq split-width-threshold nil)
+
 (kill-buffer "*scratch*")
 (load-theme 'molokai t)
 (menu-bar-mode -1)
@@ -40,7 +43,7 @@
 		(set-face-foreground 'mode-line (cdr color))))))
 (setq elscreen-tab-display-control nil)
 (setq elscreen-tab-display-kill-screen nil)
-(set-face-attribute 'elscreen-tab-background-face nil :background "black" :foreground "whie" :underline nil)
+(set-face-attribute 'elscreen-tab-background-face nil :background "black" :foreground "white" :underline nil)
 (set-face-attribute 'elscreen-tab-current-screen-face nil :background "black" :foreground "lightgreen" :underline nil)
 (set-face-attribute 'elscreen-tab-other-screen-face nil :background "black" :foreground "grey" :underline nil)
 (set-face-attribute 'linum nil :background "black" :foreground "#337733")
