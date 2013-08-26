@@ -9,8 +9,7 @@
 (require 'helm-config)
 (require 'auto-complete-config) (ac-config-default) (semantic-mode t)
 (require 'elscreen) (elscreen-start)
-;(add-to-list 'load-path "/media/data/repos/ensime/src/main/elisp/")
-;(require 'ensime) (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+(require 'linum-relative) (global-linum-mode 1)
 
 (setq explicit-shell-file-name "/usr/bin/bash")
 
@@ -44,6 +43,7 @@
 (set-face-attribute 'elscreen-tab-background-face nil :background "black" :foreground "whie" :underline nil)
 (set-face-attribute 'elscreen-tab-current-screen-face nil :background "black" :foreground "lightgreen" :underline nil)
 (set-face-attribute 'elscreen-tab-other-screen-face nil :background "black" :foreground "grey" :underline nil)
+(set-face-attribute 'linum nil :background "black" :foreground "#337733")
 
 (define-key evil-motion-state-map (kbd "RET") nil)
 (define-key evil-motion-state-map " " nil)
@@ -57,6 +57,7 @@
 
 (define-key evil-insert-state-map (kbd "RET") 'newline-and-indent)
 (key-chord-define evil-insert-state-map "kd" 'evil-normal-state)
+(key-chord-define evil-replace-state-map "kd" 'evil-normal-state)
 
 (defun make-ex (cmd) 
   (lexical-let ((cmd cmd)) (lambda () (interactive) (evil-ex cmd))))
