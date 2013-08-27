@@ -7,9 +7,15 @@
 (require 'key-chord) (key-chord-mode 1)
 (require 'ace-jump-mode)
 (require 'helm-config)
-(require 'auto-complete-config) (ac-config-default) (semantic-mode t)
+(require 'auto-complete-config) (ac-config-default) (semantic-mode t) (setq ac-ignore-case nil)
+(require 'go-autocomplete)
 (require 'elscreen) (elscreen-start)
 (require 'linum-relative) (global-linum-mode 1)
+
+(add-to-list 'load-path "/media/data/repos/go/misc/emacs") (require 'go-mode-load)
+(add-hook 'go-mode-hook (lambda () (add-hook 'before-save-hook 'gofmt-before-save)))
+(require 'go-eldoc)
+(add-hook 'go-mode-hook 'go-eldoc-setup)
 
 (setq explicit-shell-file-name "/usr/bin/bash")
 
@@ -25,7 +31,6 @@
 (setq split-height-threshold 0)
 (setq split-width-threshold nil)
 
-(kill-buffer "*scratch*")
 (load-theme 'molokai t)
 (menu-bar-mode -1)
 (show-paren-mode 1) (setq show-paren-delay 0)
@@ -33,14 +38,15 @@
 (setq redisplay-dont-pause t)
 (lexical-let ((default-color '("#333333" . "#ffffff")))
   (add-hook 'post-command-hook
-	    (lambda ()
-	      (let ((color (cond ((minibufferp) default-color)
-				 ((evil-insert-state-p) '("#e80000" . "#ffffff"))
-				 ((evil-emacs-state-p)  '("#444488" . "#ffffff"))
-				 ((buffer-modified-p)   '("#006fa0" . "#ffffff"))
-				 (t default-color))))
-		(set-face-background 'mode-line (car color))
-		(set-face-foreground 'mode-line (cdr color))))))
+            (lambda ()
+              (let ((color (cond ((minibufferp) default-color)
+                                 ((evil-insert-state-p) '("#e80000" . "#ffffff"))
+                                 ((evil-replace-state-p) '("#e80000" . "#ffffff"))
+                                 ((evil-emacs-state-p)  '("#444488" . "#ffffff"))
+                                 ((buffer-modified-p)   '("#006fa0" . "#ffffff"))
+                                 (t default-color))))
+                (set-face-background 'mode-line (car color))
+                (set-face-foreground 'mode-line (cdr color))))))
 (setq elscreen-tab-display-control nil)
 (setq elscreen-tab-display-kill-screen nil)
 (set-face-attribute 'elscreen-tab-background-face nil :background "black" :foreground "white" :underline nil)
@@ -61,6 +67,7 @@
 (define-key evil-insert-state-map (kbd "RET") 'newline-and-indent)
 (key-chord-define evil-insert-state-map "kd" 'evil-normal-state)
 (key-chord-define evil-replace-state-map "kd" 'evil-normal-state)
+(key-chord-define evil-visual-state-map "kd" 'evil-normal-state)
 
 (defun make-ex (cmd) 
   (lexical-let ((cmd cmd)) (lambda () (interactive) (evil-ex cmd))))
@@ -70,12 +77,11 @@
 
   "q" 'elscreen-kill
   "w" 'evil-write
-  "e" 'eval-last-sexp
-  "r" 'execute-extended-command
+  "e" (make-ex "e ")
   "t" (lambda () (interactive) (elscreen-create) (evil-ex "e "))
 
   "a" (make-ex "!ack ")
-  "s" 'shell
+  "s" (lambda () (interactive) (elscreen-create) (shell))
   "d" 'helm-mini
   "f" 'ace-jump-char-mode
 
@@ -83,5 +89,7 @@
   "x" 'save-buffers-kill-terminal
   "c" (make-ex "!")
   "v" 'evil-visual-block
-  "b" 'switch-to-buffer
+
+  "o" 'execute-extended-command
+  "p" 'eval-last-sexp
   )
