@@ -7,15 +7,44 @@
 (require 'key-chord) (key-chord-mode 1)
 (require 'ace-jump-mode)
 (require 'helm-config)
-(require 'auto-complete-config) (ac-config-default) (semantic-mode t) (setq ac-ignore-case nil)
-(require 'go-autocomplete)
 (require 'elscreen) (elscreen-start)
 (require 'linum-relative) (global-linum-mode 1)
 
-(add-to-list 'load-path "/media/data/repos/go/misc/emacs") (require 'go-mode-load)
-(add-hook 'go-mode-hook (lambda () (add-hook 'before-save-hook 'gofmt-before-save)))
+(require 'auto-complete-config) (ac-config-default) (semantic-mode t) (setq ac-ignore-case nil)
+(setq ac-use-quick-help nil)
+(setq ac-delay 0.1)
+(setq ac-expand-on-auto-complete nil)
+(setq ac-auto-start t)
+(setq ac-dwim t)
+
+;(require 'company) (add-hook 'after-init-hook 'global-company-mode)
+;(setq company-idle-delay 0.2)
+;(setq company-minimum-prefix-length 0)
+;(setq company-show-numbers nil)
+;(setq company-echo-delay 0)
+;(setq company-begin-commands '(self-insert-command))
+;
+;(add-to-list 'load-path "/media/data/repos/go/misc/emacs") (require 'go-mode-load)
+;(add-hook 'go-mode-hook (lambda () (add-hook 'before-save-hook 'gofmt-before-save)))
+;(add-to-list 'load-path "~/gopath/src/github.com/nsf/gocode/emacs-company")
+;(require 'company-go)
+;(custom-set-faces
+; '(company-preview ((t (:foreground "darkgray" :underline t))))
+; '(company-review-common ((t (:inherit company-preview))))
+; '(company-tooltip ((t (:background "lightgray" :foreground "black"))))
+; '(company-tooltip-selection ((t (:background "steelblue" :foreground "white"))))
+; '(company-tooltip-common ((((type x)) (:inherit company-tooltip :weight bold)) (t (:inherit company-tooltip))))
+; '(company-tooltip-common-selection
+;   ((((type x)) (:inherit company-tooltip-selection :weight bold))
+;    (t (:inherit company-tooltip-selection))))
+; )
+
+(require 'go-autocomplete)
 (require 'go-eldoc)
 (add-hook 'go-mode-hook 'go-eldoc-setup)
+;
+(add-to-list 'load-path "/media/data/repos/rust/src/etc/emacs")
+(require 'rust-mode)
 
 (setq explicit-shell-file-name "/usr/bin/bash")
 
@@ -63,6 +92,10 @@
 (define-key evil-normal-state-map "s" 'evil-find-char-backward)
 (define-key evil-normal-state-map "H" 'elscreen-previous)
 (define-key evil-normal-state-map "L" 'elscreen-next)
+(define-key evil-insert-state-map (kbd "M-h") 'elscreen-previous)
+(define-key evil-insert-state-map (kbd "M-l") 'elscreen-next)
+(define-key evil-normal-state-map (kbd "M-h") 'elscreen-previous)
+(define-key evil-normal-state-map (kbd "M-l") 'elscreen-next)
 
 (define-key evil-insert-state-map (kbd "RET") 'newline-and-indent)
 (key-chord-define evil-insert-state-map "kd" 'evil-normal-state)
@@ -93,3 +126,11 @@
   "o" 'execute-extended-command
   "p" 'eval-last-sexp
   )
+
+(add-hook 'go-mode-hook
+          (lambda ()
+            (evil-leader/set-key
+              "j" 'godoc
+              "I" 'go-remove-unused-imports
+              "i" 'go-import-add
+              )))
